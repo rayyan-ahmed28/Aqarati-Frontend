@@ -34,6 +34,8 @@ import '../../features/calculators/calculators_list_screen.dart';
 import '../aq/aq_scene.dart' show AQRoute;
 import '../../features/workspace/aq_app_shell.dart';
 import '../../features/devbuild/db_routes.dart';
+import 'product_routes.dart';
+import '../../features/reviews/review_screens.dart' show ViewingReviewBridge;
 
 final appRouter = GoRouter(
   initialLocation: '/entry',
@@ -86,7 +88,7 @@ final appRouter = GoRouter(
     GoRoute(path: '/viewings/:id/cancel', pageBuilder: (context, state) => AQRoute.sheet(key: state.pageKey, child: ViewingCancelScreen(id: state.pathParameters['id']!))),
     GoRoute(path: '/viewings/:id/cancelled', pageBuilder: (context, state) => AQRoute.hero(key: state.pageKey, child: ViewingCancelledScreen(id: state.pathParameters['id']!))),
     GoRoute(path: '/viewings/:id/completed', pageBuilder: (context, state) => AQRoute.hero(key: state.pageKey, child: ViewingCompletedScreen(id: state.pathParameters['id']!))),
-    GoRoute(path: '/viewings/:id/review', pageBuilder: (context, state) => AQRoute.sheet(key: state.pageKey, child: ViewingReviewEntryScreen(id: state.pathParameters['id']!, rating: int.tryParse(state.uri.queryParameters['rating'] ?? '')))),
+    GoRoute(path: '/viewings/:id/review', pageBuilder: (context, state) => AQRoute.sheet(key: state.pageKey, child: ViewingReviewBridge(viewingId: state.pathParameters['id']!, rating: int.tryParse(state.uri.queryParameters['rating'] ?? '')))),
     GoRoute(path: '/properties', pageBuilder: (context, state) {
       final q = state.uri.queryParameters;
       final plain = q['cat'] == null && q['tx'] == null && q['types'] == null;
@@ -94,6 +96,7 @@ final appRouter = GoRouter(
     }),
     GoRoute(path: '/properties/all', pageBuilder: (context, state) => AQRoute.forward(key: state.pageKey, child: AQPropertiesScreen(category: state.uri.queryParameters['cat'], tx: state.uri.queryParameters['tx'], types: state.uri.queryParameters['types']))),
     ...dbStandaloneRoutes(),
+    ...productRoutes(),
     GoRoute(path: '/map', pageBuilder: (context, state) => AQRoute.forward(key: state.pageKey, child: AQMapScreen(tx: state.uri.queryParameters['tx']))),
     GoRoute(path: '/calculators', pageBuilder: (context, state) => AQRoute.forward(key: state.pageKey, child: const CalculatorsListScreen())),
     GoRoute(

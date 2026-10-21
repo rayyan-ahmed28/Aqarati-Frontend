@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../help/help.dart';
 import '../../../core/aq/aq_forms.dart';
 import '../../../core/aq/aq_primitives.dart';
 import '../../../core/aq/aq_scene.dart';
@@ -98,6 +99,7 @@ class _ViewingAvailabilityScreenState extends ConsumerState<ViewingAvailabilityS
     final summaryValue = slot == null ? null : '${VFmt.shortDate(context, slot.start)} · ${VFmt.time(context, slot.start)}';
 
     return AQViewingScaffold(
+      trailing: const AQHelpButton('viewing'),
       title: v.t('vw.schedule.title'),
       subtitle: property.valueOrNull == null ? null : '${VFmt.iso(property.valueOrNull!.title)} · ${VFmt.iso(property.valueOrNull!.locationLabel.split(',').first.trim())}',
       backLabel: v.t('vw.back'),

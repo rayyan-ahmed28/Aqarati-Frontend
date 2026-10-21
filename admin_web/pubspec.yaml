@@ -1,0 +1,44 @@
+name: aqarati_admin_web
+description: "AQARATI Admin Web Console: the separate, desktop-first staff application (architecture v2.4 section 89, option B)."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+  intl: ^0.20.3
+  flutter_svg: ^2.0.16
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  # The same bundled brand fonts as the customer app (OFL). Copied, not shared, so admin code and the
+  # customer binary stay physically separate (blueprint p.05).
+  fonts:
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces.ttf
+        - asset: assets/fonts/Fraunces-Italic.ttf
+          style: italic
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans.ttf
+    - family: IBMPlexSansArabic
+      fonts:
+        - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/IBMPlexSansArabic-SemiBold.ttf
+          weight: 600
+  assets:
+    - assets/logo/

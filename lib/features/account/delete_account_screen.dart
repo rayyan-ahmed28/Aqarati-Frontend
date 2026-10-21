@@ -9,6 +9,7 @@ import '../../core/aq/aq_scene.dart';
 import '../../core/aq/aq_tokens.dart';
 import '../../core/aq/aq_typography.dart';
 import '../../core/auth/auth_repository.dart';
+import '../../core/config/backend_mode.dart';
 import '../../core/localization/flow_strings.dart';
 import '../../data/api/account_api.dart';
 import '../../data/repositories/app_state_providers.dart';
@@ -146,7 +147,11 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
           Text(f.t('del.working'), textAlign: TextAlign.center, style: AQTypography.of(context, AQText.titleMedium)),
         ]);
       case _Stage.done:
-        body = AQNoticeCard(icon: 'check', title: f.t('del.done.t'), body: f.t('del.done.b'), tone: AQTone.success);
+        body = Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          AQNoticeCard(icon: 'check', title: f.t('del.done.t'), body: f.t('del.done.b'), tone: AQTone.success),
+          // Demo builds only removed the simulated session account: say so instead of implying a server deletion.
+          if (kUseDemoBackend) ...[const SizedBox(height: AQSpacing.x3), AQErrorBanner(tone: AQBannerTone.info, text: f.t('del.done.demo'))],
+        ]);
         bottom = AQBottomActionBar(primary: AQPrimaryButton(label: f.t('del.done.cta'), trailingChevron: false, onPressed: () => context.go('/entry')));
     }
 

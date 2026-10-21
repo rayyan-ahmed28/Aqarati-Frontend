@@ -509,7 +509,7 @@ class _AQPropertyTypesScreenState extends State<AQPropertyTypesScreen> {
             title: f.t('pt.sell.t'),
             body: f.t('pt.sell.b'),
             cta: f.t('pt.sell.cta'),
-            onTap: () => context.push('/professionals?cat=realEstateAgent'),
+            onTap: () => context.push('/sell'),
           ),
         ],
       ),

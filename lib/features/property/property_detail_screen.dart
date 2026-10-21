@@ -22,6 +22,8 @@ import '../viewing/widgets/viewing_format.dart';
 import '../viewing/widgets/viewing_scaffold.dart';
 import '../workspace/aq_home.dart' show aqImg, AQSkeletonBox;
 import 'property_gallery_screen.dart';
+import '../broker/broker_data.dart' show brokerForProperty;
+import '../broker/broker_screens.dart' show AqaratiBrokerBadge;
 
 final aqPropertyProvider = FutureProvider.autoDispose.family<Property?, String>((ref, id) => ref.watch(propertyRepositoryProvider).getById(id));
 final aqListerProvider = FutureProvider.autoDispose.family<Business?, String>((ref, id) => ref.watch(businessRepositoryProvider).getById(id));
@@ -333,6 +335,27 @@ class _PropertyDetailScreenState extends ConsumerState<PropertyDetailScreen> {
                         AQSecondaryButton(label: f.t('pd.offer'), trailingChevron: false, leadingIcon: 'send', onPressed: () => aqRequireSession(context, ref, actionKey: 'pd.a.offer', go: () => Navigator.of(context).push(AQRoute.route<void>(MakeOfferScreen(property: p))))),
                       ],
                       _head(context, f.t('pd.listedBy')),
+                      // Programme listings carry the Aqarati Broker badge and lead to the broker's profile.
+                      if (brokerForProperty(p.id) case final broker?) ...[
+                        AQPressable(
+                          onTap: () => context.push('/brokers/${broker.id}'),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: AQSpacing.x3),
+                            padding: const EdgeInsets.all(AQSpacing.x3),
+                            decoration: BoxDecoration(color: c.surfaceSelected, borderRadius: BorderRadius.circular(AQRadius.medium)),
+                            child: Row(children: [
+                              Expanded(
+                                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                  const AqaratiBrokerBadge(),
+                                  const SizedBox(height: AQSpacing.x1),
+                                  Text('${f.t('abk.onListing')} · ${VFmt.iso(broker.name)}', style: AQTypography.of(context, AQText.bodySmall)),
+                                ]),
+                              ),
+                              AQIcon('chevron-right', size: 16, color: c.inkSoft, directional: true),
+                            ]),
+                          ),
+                        ),
+                      ],
                       _lister(context, f, c, p, lister),
                       if (p.latitude != null && p.longitude != null) ...[
                         _head(context, f.t('pd.location')),

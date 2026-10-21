@@ -31,6 +31,11 @@ class DemoBackendState {
   InteriorExteriorServiceType? serviceType;
   String? reference;
   DateTime? decidedAt;
+  String? firstName;
+  String? lastName;
+  GrantState? providerGrant;
+  /// Failure injection for QA and tests: the next profile save fails.
+  bool failNextProfileSave = false;
 
   /// DEMO: forgets the simulated account (used by the simulated account deletion).
   void wipe() {
@@ -55,6 +60,9 @@ class DemoBackendState {
     serviceType = null;
     reference = null;
     decidedAt = null;
+    firstName = null;
+    lastName = null;
+    providerGrant = null;
   }
 }
 
@@ -134,13 +142,26 @@ class DemoAccountApi implements AccountApi {
 
   static const _cooldown = 30;
 
-  MeSession _me() => MeSession(account: s.account, purpose: s.purpose, grant: s.grant, stage: s.stage, phoneLast4: s.phone == null || s.phone!.length < 4 ? null : s.phone!.substring(s.phone!.length - 4));
+  MeSession _me() => MeSession(
+        account: s.account,
+        purpose: s.purpose,
+        grant: s.grant,
+        stage: s.stage,
+        phoneLast4: s.phone == null || s.phone!.length < 4 ? null : s.phone!.substring(s.phone!.length - 4),
+        firstName: s.firstName,
+        lastName: s.lastName,
+        email: s.email,
+        businessName: s.businessName,
+        providerGrant: s.providerGrant,
+      );
 
   @override
   Future<MeSession> signUp(SignupPurpose purpose, SignupFormValues values) async {
     await Future<void>.delayed(const Duration(milliseconds: 700));
     s.purpose = purpose;
     s.phone = values.phone;
+    s.firstName = values.firstName.trim();
+    s.lastName = values.lastName.trim();
     s.businessName = values.businessName.isNotEmpty ? values.businessName : (values.agencyName.isNotEmpty ? values.agencyName : '${values.firstName} ${values.lastName}'.trim());
     s.serviceType = values.serviceType;
     s.account = AccountState.otpPending;
@@ -236,6 +257,27 @@ class DemoAccountApi implements AccountApi {
   Future<void> deleteAccount() async {
     await Future<void>.delayed(const Duration(milliseconds: 900));
     s.wipe();
+  }
+
+  @override
+  Future<MeSession> updateProfile({required String firstName, required String lastName}) async {
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    if (!s.signedIn) throw const ApiException(ApiErrorCode.network);
+    if (s.failNextProfileSave) {
+      s.failNextProfileSave = false;
+      throw const ApiException(ApiErrorCode.server);
+    }
+    if (firstName.trim().isEmpty || lastName.trim().isEmpty) throw const ApiException(ApiErrorCode.validationFailed);
+    s.firstName = firstName.trim();
+    s.lastName = lastName.trim();
+    return _me();
+  }
+
+  /// Demo: there is only this device, so revoking every session signs this one out.
+  @override
+  Future<void> signOutEverywhere() async {
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    s.signedIn = false;
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../help/help.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -163,6 +164,7 @@ class _DbHomeScreenState extends ConsumerState<DbHomeScreen> {
         onBack: () => aqBack(context, '/app/explore'),
       ),
       children: [
+        Row(children: [Expanded(child: Text(f.t('help.devBuild.s'), style: AQTypography.of(context, AQText.bodySmall, soft: true))), const AQHelpButton('devBuild')]),
         AQQueryField(
           controller: _ctl,
           hint: f.t('db.search.hint'),

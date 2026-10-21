@@ -4,8 +4,9 @@
 const kReviewMinChars = 10;
 const kReviewMaxChars = 500;
 
-/// What a review is about. Viewing reviews (the seller) are handled by the viewing flow.
-enum ReviewTargetKind { professional, provider }
+/// What a review is about: a professional company (confirmed engagement), a maintenance provider
+/// (completed booking) or a seller who hosted a viewing (agent / Aqarati Broker).
+enum ReviewTargetKind { professional, provider, seller }
 
 class ReviewTarget {
   final ReviewTargetKind kind;
@@ -87,15 +88,9 @@ class ReviewEligibility {
   const ReviewEligibility(this.kind, {this.existing, this.windowEndsAt});
 }
 
-/// Report reasons are a front-end proposal: the service has not published its reason codes yet.
-enum ReportReason {
-  inappropriate,
-  falseMisleading,
-  harassment,
-  personalDetails,
-  notRelevant,
-  other,
-}
+/// Report reasons: the service has not published a closed list of report codes, so the reporter
+/// explains in their own words (10-500 characters, the same bounds as a review comment).
+String? reportReasonError(String text) => reviewCommentError(text);
 
 /// 422 REVIEW_NOT_ELIGIBLE: no completed interaction.
 class ReviewNotEligibleException implements Exception {

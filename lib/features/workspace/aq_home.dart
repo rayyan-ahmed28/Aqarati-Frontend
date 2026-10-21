@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../help/help.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -366,7 +367,9 @@ class AQSectionHeader extends StatelessWidget {
   final String? sub;
   final String? action;
   final VoidCallback? onAction;
-  const AQSectionHeader(this.title, {this.sub, this.action, this.onAction});
+  /// Optional contextual help topic: a "?" after the title opens its short explanation.
+  final String? help;
+  const AQSectionHeader(this.title, {this.sub, this.action, this.onAction, this.help});
 
   @override
   Widget build(BuildContext context) {
@@ -374,12 +377,19 @@ class AQSectionHeader extends StatelessWidget {
     final heading = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Semantics(
-          header: true,
-          child: Text(
-            title,
-            style: AQTypography.of(context, AQText.headlineMedium),
-          ),
+        Row(
+          children: [
+            Flexible(
+              child: Semantics(
+                header: true,
+                child: Text(
+                  title,
+                  style: AQTypography.of(context, AQText.headlineMedium),
+                ),
+              ),
+            ),
+            if (help != null) AQHelpButton(help!),
+          ],
         ),
         if (sub != null)
           Padding(
@@ -1004,13 +1014,14 @@ class _Badge extends StatelessWidget {
 
 List<Widget> _developmentSection(BuildContext context) {
   final f = FlowStrings.of(context);
-  void go() => context.push('/professionals');
+  void go() => context.push('/app/explore/build');
   return [
     AQSectionHeader(
       f.t('home.dev'),
       sub: f.t('home.dev.sub'),
       action: f.t('explore.exploreAll'),
       onAction: go,
+      help: 'devBuild',
     ),
     _TileRow([
       (
@@ -1046,6 +1057,7 @@ List<Widget> _maintenanceSection(BuildContext context) {
       sub: f.t('home.maint.sub'),
       action: f.t('explore.exploreAll'),
       onAction: go,
+      help: 'maintenance',
     ),
     _TileRow([
       (
@@ -1167,7 +1179,7 @@ Widget _brokerLoan(BuildContext context) {
     'assets/location/10_Muscat_corniche_at_warm_evening.jpg',
     f.t('home.broker'),
     f.t('home.broker.sub'),
-    () => context.push('/professionals'),
+    () => context.push('/brokers'),
   );
   final loan = card(
     'assets/properties/p5/03_Contemporary_apartment_property_.jpg',
@@ -1273,6 +1285,7 @@ class AQHomeScreen extends ConsumerWidget {
           f.t('home.browse'),
           action: f.t('home.seeAll'),
           onAction: () => context.push('/properties'),
+          help: 'markets',
         ),
         _TileRow([
           for (final k in PropCategory.values)

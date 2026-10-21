@@ -7,6 +7,8 @@ import '../engagement/engagement_models.dart';
 import '../engagement/engagement_repository.dart';
 import '../maintenance/maintenance_models.dart';
 import '../maintenance/maintenance_repository.dart';
+import '../viewing/data/viewing_repository.dart';
+import '../viewing/domain/viewing_models.dart';
 import 'review_models.dart';
 
 /// Frontend contract for reviews. The service enforces eligibility, uniqueness and moderation; the
@@ -24,11 +26,8 @@ abstract class ReviewRepository {
   });
   Future<List<MyReview>> mine();
   Future<MyReview?> forTarget(ReviewTarget target);
-  Future<void> report({
-    required String reviewId,
-    required ReportReason reason,
-    String note = '',
-  });
+  /// POST /reviews/:id/reports.
+  Future<void> report({required String reviewId, required String reason});
 }
 
 class UnavailableReviewRepository implements ReviewRepository {
@@ -51,11 +50,7 @@ class UnavailableReviewRepository implements ReviewRepository {
   @override
   Future<MyReview?> forTarget(ReviewTarget target) async => _no();
   @override
-  Future<void> report({
-    required String reviewId,
-    required ReportReason reason,
-    String note = '',
-  }) async => _no();
+  Future<void> report({required String reviewId, required String reason}) async => _no();
 }
 
 /// DEMO ONLY: in memory. Moderation outcomes are simulated through [debugSet] (QA tools only).
@@ -134,14 +129,13 @@ class DemoReviewRepository implements ReviewRepository {
   }
 
   @override
-  Future<void> report({
-    required String reviewId,
-    required ReportReason reason,
-    String note = '',
-  }) async {
+  Future<void> report({required String reviewId, required String reason}) async {
     await _lag();
+    if (reportReasonError(reason) != null) throw const ApiException(ApiErrorCode.validationFailed);
     if (!_reported.add(reviewId)) throw const ReviewAlreadyReportedException();
   }
+
+  bool debugReported(String reviewId) => _reported.contains(reviewId);
 
   /// QA only: simulates moderation and the "later interaction" that unlocks editing.
   void debugSet(String id, {ReviewStatus? status, bool? canEdit}) {
@@ -220,6 +214,15 @@ final reviewEligibilityProvider = FutureProvider.autoDispose
             return const ReviewEligibility(
               ReviewEligibilityKind.notYetEligible,
             );
+          }
+          return const ReviewEligibility(ReviewEligibilityKind.notEligible);
+        case ReviewTargetKind.seller:
+          final list = (await ref.watch(viewingRepositoryProvider).list()).where((v) => v.host.id == target.id).toList();
+          if (list.any((v) => v.status == ViewingStatus.completed)) {
+            return const ReviewEligibility(ReviewEligibilityKind.eligible);
+          }
+          if (list.any((v) => v.isActive)) {
+            return const ReviewEligibility(ReviewEligibilityKind.notYetEligible);
           }
           return const ReviewEligibility(ReviewEligibilityKind.notEligible);
       }

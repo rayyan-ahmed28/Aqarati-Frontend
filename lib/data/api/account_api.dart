@@ -62,6 +62,13 @@ abstract class AccountApi {
   /// POST /me/verification/resubmit (grant -> pending_verification).
   Future<void> resubmit();
 
+  /// PATCH /me: the person's own name. Email changes go through Firebase (verify-before-update) and
+  /// the phone number is changed only through OTP, so neither is part of this call.
+  Future<MeSession> updateProfile({required String firstName, required String lastName});
+
+  /// POST /auth/log-out-all: revokes every session of this account, on every device.
+  Future<void> signOutEverywhere();
+
   /// Asks AQARATI to delete the signed-in account. The endpoint is not confirmed; callers must treat a
   /// thrown [ApiException] as "nothing was deleted".
   Future<void> deleteAccount();
@@ -90,6 +97,10 @@ class UnavailableAccountApi implements AccountApi {
   Future<void> resubmit() async => _no();
   @override
   Future<void> deleteAccount() async => _no();
+  @override
+  Future<MeSession> updateProfile({required String firstName, required String lastName}) async => _no();
+  @override
+  Future<void> signOutEverywhere() async => _no();
 }
 
 final accountApiProvider = Provider<AccountApi>((ref) => const UnavailableAccountApi());

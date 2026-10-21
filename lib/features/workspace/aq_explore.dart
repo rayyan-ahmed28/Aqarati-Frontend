@@ -113,9 +113,9 @@ class AQExploreScreen extends StatelessWidget {
           title: f.t('ex.broker.t'),
           body: f.t('ex.broker.b'),
           cta: f.t('ex.broker.cta'),
-          onTap: () => go('/professionals?cat=realEstateAgent'),
+          onTap: () => go('/brokers'),
         ),
-        AQSectionHeader(f.t('home.maint'), sub: f.t('ex.maint.sub'), action: f.t('explore.exploreAll'), onAction: () => go('/professionals?cat=maintenance')),
+        AQSectionHeader(f.t('home.maint'), sub: f.t('ex.maint.sub'), action: f.t('explore.exploreAll'), onAction: () => go('/professionals?cat=maintenance'), help: 'maintenance'),
         _iconTiles(context, [
           ('assets/businesses/b4/03_Plumbing_maintenance_under_sink.jpg', 'construction', f.t('maint.plumber'), () => go('/professionals?cat=maintenance')),
           ('assets/properties/p1/02_Infinity_pool_overlooking_marina.jpg', 'sunrise', f.t('maint.pool'), () => go('/professionals?cat=maintenance')),

@@ -150,7 +150,15 @@ class MeSession {
   final GrantState? grant;
   final ReviewStage? stage;
   final String? phoneLast4;
-  const MeSession({required this.account, this.purpose, this.grant, this.stage, this.phoneLast4});
+  /// Profile fields from GET /me (editable through PATCH /me). Null when the service does not send them.
+  final String? firstName, lastName, email;
+  /// Business or agency name recorded at sign-up (company and agent paths).
+  final String? businessName;
+  /// Maintenance provider grant (admin-invited, not a public sign-up path). Null when the account has none.
+  final GrantState? providerGrant;
+  const MeSession({required this.account, this.purpose, this.grant, this.stage, this.phoneLast4, this.firstName, this.lastName, this.email, this.businessName, this.providerGrant});
+
+  String get displayName => [firstName, lastName].whereType<String>().where((x) => x.trim().isNotEmpty).join(' ');
 }
 
 enum DocumentOutcome { notSubmitted, pendingReview, accepted, rejected }

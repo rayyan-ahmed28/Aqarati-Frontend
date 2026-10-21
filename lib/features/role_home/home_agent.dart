@@ -7,12 +7,15 @@ import '../../core/aq/aq_tokens.dart';
 import '../../core/aq/aq_typography.dart';
 import '../../core/localization/flow_strings.dart';
 import '../devbuild/db_widgets.dart' show DbNotice;
+import '../listings/listing_models.dart' show ListingState;
+import '../listings/listing_repository.dart' show myListingsProvider;
 import 'role_home_model.dart';
 import 'role_home_widgets.dart';
 
 /// Real Estate Agent: a compact operations console. No photography, dense rows, the
 /// Buyer / Agent switch first. Listings, viewings and contact activity only show what the
-/// connected services can really provide; the listing service is not connected, so that area
+/// connected services can really provide. Listings come from the listing repository (demo until the
+/// API is wired); contact activity has no service yet, so that area
 /// says so instead of inventing rows or counts.
 class AgentHome extends ConsumerWidget {
   const AgentHome({super.key});
@@ -80,7 +83,7 @@ class AgentHome extends ConsumerWidget {
       RoleReveal(
         index: 4,
         child: _Grid(children: [
-          RoleTile(icon: 'list', label: f.t('rh.agent.listings'), sub: f.t('rh.agent.listings.sub'), unavailable: true, note: f.t('rh.agent.listings.note'), accent: accent),
+          RoleTile(icon: 'list', label: f.t('rh.agent.listings'), sub: f.t('rh.agent.listings.sub'), onTap: () => context.push('/listings'), accent: accent),
           RoleTile(icon: 'calendar', label: f.t('rh.agent.viewings'), sub: f.t('rh.agent.viewings.sub'), onTap: () => context.go('/app/activity'), accent: accent),
           RoleTile(icon: 'phone', label: f.t('rh.contact'), sub: f.t('rh.contact.sub'), unavailable: true, note: f.t('rh.agent.contact.note'), accent: accent),
           RoleTile(icon: 'user', label: f.t('rh.agent.profileTile'), sub: f.t('rh.agent.profileTile.sub'), onTap: () => context.push('/verification/details'), accent: accent),
@@ -94,8 +97,24 @@ class AgentHome extends ConsumerWidget {
           Text(f.t('rh.agent.status.t'), style: AQTypography.of(context, AQText.titleSmall)),
           const SizedBox(height: 2),
           Text(f.t('rh.agent.status.b'), style: AQTypography.of(context, AQText.bodySmall, soft: true)),
-          const SizedBox(height: AQSpacing.x2),
-          Align(alignment: AlignmentDirectional.centerStart, child: RoleChip(f.t('rh.agent.status.tag'), color: accent)),
+          const SizedBox(height: AQSpacing.x3),
+          // Real counts from the listing repository; nothing is estimated.
+          ref.watch(myListingsProvider).when(
+                loading: () => const SizedBox(height: 40, child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)))),
+                error: (_, _) => Text(f.t('common.networkError'), style: AQTypography.of(context, AQText.bodySmall, color: c.danger)),
+                data: (ls) => ls.isEmpty
+                    ? Text(f.t('rh.agent.status.empty'), style: AQTypography.of(context, AQText.bodySmall, soft: true))
+                    : Wrap(spacing: AQSpacing.x2, runSpacing: AQSpacing.x2, children: [
+                        for (final st in [ListingState.approvedActive, ListingState.pending, ListingState.resubmissionRequired, ListingState.expired])
+                          if (ls.any((l) => l.state == st)) RoleChip('${f.t('lst.st.${st.name}')} · ${ls.where((l) => l.state == st).length}', color: accent),
+                      ]),
+              ),
+          const SizedBox(height: AQSpacing.x3),
+          Row(children: [
+            Expanded(child: AQSecondaryButton(label: f.t('rh.agent.listings'), compact: true, trailingChevron: false, onPressed: () => context.push('/listings'))),
+            const SizedBox(width: AQSpacing.x2),
+            Expanded(child: AQPrimaryButton(label: f.t('rh.agent.new'), compact: true, trailingChevron: false, onPressed: () => context.push('/listings/new?channel=agent'))),
+          ]),
         ]),
       ),
       RoleSection(f.t('rh.agent.recent')),

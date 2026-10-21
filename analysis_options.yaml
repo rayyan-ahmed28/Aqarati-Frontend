@@ -12,6 +12,8 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   exclude:
     - build/**
+    # The Admin Web Console is a separate package with its own analysis (admin_web/).
+    - admin_web/**
     - android/**
     - ios/**
     - web/**

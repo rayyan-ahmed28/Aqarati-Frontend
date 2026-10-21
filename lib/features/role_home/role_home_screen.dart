@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/aq/aq_tokens.dart';
+import '../../core/domain/account_models.dart' show GrantState;
 import '../../data/api/account_api.dart' show meProvider;
+import '../provider/provider_screens.dart' show ProviderHomeBanner;
 import '../devbuild/db_widgets.dart' show DbSkeleton;
 import '../workspace/aq_home.dart' show AQHomeScreen;
 import 'home_agent.dart';
@@ -35,7 +37,7 @@ class RoleHomeScreen extends ConsumerWidget {
       );
     }
     final Widget home = switch (r.role) {
-      HomeRole.buyer => AQHomeScreen(topSlot: _buyerTop(ref, r)),
+      HomeRole.buyer => AQHomeScreen(topSlot: _buyerTop(ref, r, me.valueOrNull?.providerGrant)),
       HomeRole.agent => const AgentHome(),
       HomeRole.developer => const DeveloperHome(),
       HomeRole.construction => const ConstructionHome(),
@@ -56,7 +58,11 @@ class RoleHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget? _buyerTop(WidgetRef ref, HomeResolution r) {
+  Widget? _buyerTop(WidgetRef ref, HomeResolution r, GrantState? providerGrant) {
+    // An invited maintenance provider lands on the customer home with a way into their workspace.
+    if (providerGrant != null) {
+      return Padding(padding: const EdgeInsets.only(top: AQSpacing.x3), child: RoleReveal(child: ProviderHomeBanner(grant: providerGrant)));
+    }
     if (r.canSwitch) {
       return Padding(
         padding: const EdgeInsets.only(top: AQSpacing.x3, bottom: AQSpacing.x4),

@@ -6,6 +6,7 @@ import 'core/config/backend_mode.dart';
 import 'core/localization/entry_strings.dart';
 import 'data/demo/demo_providers.dart';
 import 'core/startup/intro_host.dart';
+import 'features/system/version_gate.dart';
 import 'core/theme/app_theme.dart';
 import 'core/aq/aq_tokens.dart';
 import 'data/repositories/local_persistence.dart';
@@ -33,7 +34,7 @@ class AqaratiApp extends ConsumerWidget {
       // add ar to supportedLocales + arb strings when Arabic ships.
       locale: ref.watch(localeProvider),
       builder: (context, child) {
-        Widget app = AQLocalPersistence(child: AQThemeTransition(mode: ref.watch(themeModeProvider), child: IntroHost(child: child ?? const SizedBox.shrink())));
+        Widget app = AQLocalPersistence(child: AQThemeTransition(mode: ref.watch(themeModeProvider), child: IntroHost(child: AQVersionGate(child: child ?? const SizedBox.shrink()))));
         // QA only: `--dart-define=AQ_TEXT_SCALE=2.0` previews large-text layouts. Default 1.0 changes nothing.
         final scale = double.tryParse(const String.fromEnvironment('AQ_TEXT_SCALE')) ?? 1;
         if (scale != 1) app = MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)), child: app);

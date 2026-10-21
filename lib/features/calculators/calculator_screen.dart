@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../help/help.dart';
 import 'package:flutter/services.dart';
 import '../../core/aq/aq_forms.dart';
 import '../../core/aq/aq_scene.dart';
@@ -111,7 +112,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 ),
         ),
         if (out != null && note != null) Padding(padding: const EdgeInsets.only(top: AQSpacing.x3), child: Text(note, style: AQTypography.of(context, AQText.bodySmall, soft: true))),
-        Padding(padding: const EdgeInsets.only(top: AQSpacing.x3, bottom: AQSpacing.x4), child: Text(f.t('calc.disclaimer'), style: AQTypography.of(context, AQText.bodySmall, color: c.inkFaint))),
+        Padding(padding: const EdgeInsets.only(top: AQSpacing.x3, bottom: AQSpacing.x4), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(child: Text(f.t('calc.disclaimer'), style: AQTypography.of(context, AQText.bodySmall, color: c.inkFaint))), const AQHelpButton('loan')])),
       ],
     );
   }

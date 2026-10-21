@@ -1,115 +1,145 @@
 # Full product screen inventory
 
-Updated 2026-10-16 from the actual repository (`aqarati-app`, branch `main`, HEAD `5a27396`, with uncommitted work). The route list was extracted from the router source (78 routes now; 74 before this pass), plus screens reached without a route.
+Updated 2026-10-21 from the actual repository (`SyedAmeenAli/Aqarati-Final-UI-UX`, branch `main`, base commit `e0a6bc3`, plus the uncommitted completion pass described in `IMPLEMENTATION_LOG.md`). Routes were counted from source: **112 literal `GoRoute` paths + 6 sign-up paths generated from `signupPurposeOptions` = 118 customer-app routes**, and **13 routes in the separate Admin Web Console** (`admin_web/`).
 
-Status words: **implemented & verified** (source, tests and a browser walk agree), **implemented not verified**, **partial**, **missing**, **demo-only** (works on an in-memory repository), **blocked by API**, **decision needed**.
+Status words: **verified** (source + automated test + browser walk agree), **implemented, not verified** (source + tests, no browser walk), **partial**, **demo-only** (works on an in-memory repository and says so on screen), **blocked** (needs an API or contract that does not exist), **decision needed** (product decision open), **not in scope**.
 
-Evidence: T = automated test file; B = Chromium route or flow walk on 2026-10-15/16 (QA build); M = the 26-screen layout matrix (`app_matrix_test.dart`: 320 light, 320 dark, Arabic 360, 200% text, Arabic dark 430). Counts of screens are given only for routes found in the source, not for products that are not in this repository.
+Every customer screen below that runs on simulated data shows the DEMO notice while `kUseDemoBackend` is true. "Demo-only" therefore describes the data source, not the UI completeness.
 
-## 1. Entry, identity and signup
+Evidence keys: **T** automated test file; **M** layout matrix (`app_matrix_test.dart` or `completion_matrix_test.dart`: 320 px, dark, Arabic RTL, 200 % text); **B** browser walk of the QA build on 2026-10-21.
 
-| Screen | Route | File | Status | Notes | Evidence |
-|---|---|---|---|---|---|
-| Entry / launch film | `/entry` | `entry/screens/onboarding_entry_screen.dart` | implemented & verified | No version gate or forced-update screen exists | T intro, B |
-| Purpose selection (six paths) | `/onboarding/purpose` | `entry/screens/purpose_selection_screen.dart` | implemented & verified | Exactly six cards, single select | T `signup_paths`, `onboarding_experience`, B |
-| Signup form (six role paths) | `/signup/user|agent|construction|development|architecture|interior-exterior` | `flow/screens/signup_form_screen.dart` | implemented & verified (demo) | Company email and address added; decisions D3 open | T, B |
-| Phone OTP | `/otp` | `flow/screens/otp_screens.dart` | demo-only | Limits are simulated | T, B |
-| Email verification | `/verify-email` | `flow/screens/email_verification_screen.dart` | implemented not verified | | T partial |
-| Account active | `/account/active` | `flow/screens/otp_screens.dart` | demo-only | | T, B |
-| Login | `/login` | `flow/screens/auth_screens.dart` | demo-only | No real auth; no session restore | M, B |
-| Forgot / reset password | `/forgot-password`, `/reset-password` | `flow/screens/auth_screens.dart` | demo-only | | M, B |
-| Terms, Privacy | `/legal/terms`, `/legal/privacy` | `flow/screens/legal_screens.dart` | partial | Placeholder text; no consent versions | M, B |
-| Invitation acceptance (maintenance provider) | none | none | missing | Admin-invited path; needs invite API and provider workspace | none |
-| Forced update / version gate | none | none | missing | Needs config API | none |
-
-## 2. Business verification
-
-| Screen | Route | File | Status | Evidence |
-|---|---|---|---|---|
-| Verification intro | `/onboarding/verification-intro` | `flow/screens/verification_onboarding_screens.dart` | demo-only | B |
-| Documents | `/onboarding/documents` | same | demo-only (picker, signature check, expiry; no real storage) | T `document_controller`, B |
-| Review, Submitted | `/onboarding/review`, `/onboarding/submitted` | same | demo-only; review refresh bug fixed | T, B |
-| Status (all grant states) | `/verification` | `flow/screens/verification_status_screens.dart` | implemented not verified for all states in a default browser; buyers are redirected home | T `app_audit`, `onboarding_experience` |
-| Application details | `/verification/details` | same | implemented not verified | T partial |
-| Resubmission, review, resubmitted | `/verification/resubmit*` | same | demo-only | T partial |
-| Approved, summary, activation | `/verification/approved`, `/verification/summary`, `/workspace/activation` | `flow/screens/approval_screens.dart` | implemented not verified (QA-only reachability) | T partial |
-
-## 3. Home, Explore, Search, Properties
-
-| Screen | Route | File | Status | Evidence |
-|---|---|---|---|---|
-| Role-aware home (six) | `/app/home` | `role_home/*`, `workspace/aq_home.dart` | implemented & verified (front end) | T `role_home` 97, B, M |
-| Explore | `/app/explore` | `workspace/aq_explore.dart` | implemented & verified (layout), mock data | B, M, T |
-| Search start, results | `/search/start`, `/search` | `search/aq_search.dart` | implemented & verified (layout), mock data | T `search_filters`, B, M |
-| Property types / markets | `/properties` | `search/aq_property_types.dart` | partial | Four markets present; Invest not in the model (decision needed) | B, M |
-| Results list | `/properties/all` | `workspace/aq_home.dart` | implemented & verified (layout), mock data | B, M |
-| Results map | `/map` | `search/aq_map.dart` | implemented not verified on a device (keyless embed) | B, M |
-| Property detail | `/property/:id` | `property/property_detail_screen.dart` | implemented & verified (layout), mock data | B, M, T |
-| Gallery, Enquiry, Offer | none (pushed with the shared transition) | `property/property_gallery_screen.dart`, `enquiry/*` | partial: honest "saved on this device, not delivered" | T `listing_pages` |
-| Compare | `/compare` | `compare/compare_screen.dart` | implemented | T |
-| Saved | `/saved` | `saved/saved_screen.dart` | implemented & verified; saved ids persist on the device | T, B |
-| Listing submission, review, lifecycle | none | none | missing | Needs owner/agent listing API and the e-Broker decision |
-| Aqary e-Broker (sell) | none | none | missing, decision needed (fee model #26) | none |
-
-## 4. Viewings and Activity
-
-| Screen | Route | File | Status | Evidence |
-|---|---|---|---|---|
-| Activity (viewings and maintenance switch) | `/app/activity` | `activity/activity_screen.dart`, `viewing/screens/my_viewings_screen.dart` | implemented & verified (demo) | T `product_flows`, B, M |
-| Availability, slot, review, conflict | `/property/:id/viewing[...]` | `viewing/screens/viewing_schedule_screens.dart` | demo-only; verified to "requested" | T `viewing_logic` 6, B, M |
-| Requested, confirmed, declined, reschedule, cancel, cancelled, completed, review entry, detail | `/viewings/:id[...]` | `viewing/screens/*` | demo-only (host answers simulated, QA only) | T, B partial |
-
-## 5. Maintenance (new in this pass)
-
-| Screen | Route | File | Status | Evidence |
-|---|---|---|---|---|
-| Provider discovery | `/professionals?cat=maintenance`, home tiles | `business/aq_professionals.dart` | implemented & verified (mock data) | B, M |
-| Provider profile with "Request a booking" | `/business/:id` | `business/aq_business_profile.dart` | implemented & verified | B, M |
-| Booking request (form, review, send) | `/business/:id/book` | `maintenance/maintenance_screens.dart` | demo-only; verified end to end | T `product_flows` (10), B, M |
-| Request detail, cancel, status timeline copy | `/bookings/:id` | same | demo-only | T, B |
-| Requests list | Activity > Maintenance | same | demo-only | T, B |
-| Provider-side (confirm, decline, complete) | none | QA controls only | missing, blocked by API (provider workspace) | none |
-| Review after completion | pushes the eligibility explainer | `reviews/review_screen.dart` | partial (explains the rule; no composer) | T partial |
-
-## 6. Notifications and account
-
-| Screen | Route | File | Status | Evidence |
-|---|---|---|---|---|
-| Notification inbox | `/notifications` | `notifications/notifications.dart` | partial: in-app inbox built from real viewing, maintenance and verification state; deep links; read state kept on the device | T, B, M |
-| Notification delivery (push), preferences | none | none | missing, blocked by API | none |
-| Account overview | `/app/account` | `workspace/aq_app_shell.dart` | partial | M, B |
-| Delete account (info, confirm, working, result) | `/account/delete` | `account/delete_account_screen.dart` | partial: UI complete; the real endpoint is not confirmed so production wiring reports "nothing was deleted" | T (4), M |
-| Edit personal profile, organisation members, devices and sessions | none | none | missing | needs APIs |
-| Language, theme | in Account | | implemented & verified | B, T motion |
-
-## 7. Professionals, Development & Building, workspaces
-
-| Screen | Route | File | Status | Evidence |
-|---|---|---|---|---|
-| D&B home, categories, results (list and map) | `/app/explore/build[...]` | `devbuild/db_discovery.dart` | demo-only roster; verified | T 75, B, M |
-| Company profile, reviews, projects, project detail, gallery | `/build/pro/:id[...]`, `/build/project/:id[...]` | `devbuild/db_profile.dart` | demo-only | T, B |
-| Business workspace dashboard | `/app/account/workspace` | `devbuild/db_workspace.dart` | demo-only | T |
-| Projects list, wizard, status, submitted | `/app/account/workspace/projects`, `/workspace/projects/*` | `devbuild/db_projects.dart`, `db_wizard.dart` | demo-only; media and amenities blocked | T 40, B (wizard opens) |
-| Profile edit and status | `/app/account/workspace/profile[...]` | `devbuild/db_pro_tools.dart` | partial: not persisted | T, B |
-| Leads, lead detail | `/app/account/workspace/leads`, `/workspace/leads/:id` | same | blocked by API | T |
-| Business reviews | `/app/account/workspace/reviews` | same | partial | T |
-| Engagements and detail | `/app/account/workspace/engagements`, `/workspace/engagements/:id` | same | blocked by API | T |
-| Portfolio | `/app/account/workspace/portfolio` | same | blocked, proposed | T |
-| AqaratiBroker | home card to `/professionals` | | partial: no dedicated programme screens; decision pending | B |
-
-## 8. Tools
+## 1. Entry, identity, sign-up (existing, re-verified by tests only)
 
 | Screen | Route | Status | Evidence |
 |---|---|---|---|
-| Calculators list and three calculators | `/calculators`, `/calculators/:id` | implemented & verified (disclaimer shown) | T 7, B, M |
+| Entry / launch film | `/entry` | verified | T, B (film + Skip) |
+| Purpose selection (six paths) | `/onboarding/purpose` | verified | T |
+| Six sign-up forms | `/signup/*` (6) | demo-only | T |
+| Phone OTP, email verification, account active | `/otp`, `/verify-email`, `/account/active` | demo-only | T |
+| Login, forgot / reset password | `/login`, `/forgot-password`, `/reset-password` | demo-only | T, M |
+| Terms, Privacy | `/legal/terms`, `/legal/privacy` | partial: shell only, legal text not supplied | M |
+| **Forced update (version gate)** | wraps the app (`AQVersionGate`) | **new**, implemented, not verified in browser (QA: `?minVersion=9.9.9`) | T `completion_flows`, M |
+| **Session expired** | `/session-expired` | **new**, implemented | M |
+| **Maintenance provider invitation** | `/invite/:token` | **new**, demo-only (`demo-invite`, `expired`, `used`) | T, M |
 
-## 9. Separate products (not in this app)
+## 2. Business verification (existing)
 
-| Product | Status | Evidence |
+| Screen | Route | Status |
 |---|---|---|
-| Admin Web Console (`aqarati-admin-web`) | **missing**: the sibling monorepo `aqarati/apps/admin-web` contains README files only (18 files, 0 code files) | file count |
-| Backend API | exists separately: `aqarati/apps/api` has 105 non-README files including database migrations; it was **not inspected** in this pass and no contracts from it were assumed | file count |
+| Verification intro, documents, review, submitted | `/onboarding/*` | demo-only (T) |
+| Status (all grant states), details, resubmission, approved, summary, activation | `/verification*`, `/workspace/activation` | implemented, demo-only (T) |
 
-## Totals (from the source, not estimates)
+## 3. Six role homes (existing, entry points extended)
 
-78 routes in the Flutter router; 26 screens in the layout matrix; every route renders without error in the QA build. Screens that are `missing`: e-Broker sell flow and listing lifecycle, notification push and preferences, profile and organisation members and devices, invitation acceptance, version gate, admin console, provider-side maintenance workspace. Everything marked demo-only needs real services before release.
+| Home | Status | Change in this pass |
+|---|---|---|
+| Buyer | verified (T, M, B) | Aqarati Broker tile → `/brokers`; D&B section → `/app/explore/build`; `?` help on Browse, D&B, Maintenance; provider banner when the account holds a provider grant |
+| Agent (with Buyer ↔ Agent switcher) | verified (T, B) | **My listings tile now works**; live listing counts by state; New listing CTA |
+| Developer, Construction, Architecture, Interior & Exterior | verified (T) | unchanged |
+| Maintenance provider (home banner → workspace) | new, demo-only | — |
+
+## 4. Property discovery and listing lifecycle
+
+| Screen | Route | Status | Evidence |
+|---|---|---|---|
+| Explore, search, markets, results, map, detail, saved, compare, calculators | existing routes | verified (layout) on mock data | T, M, B |
+| Property detail: Aqarati Broker badge + link | `/property/:id` | new, demo data | T (matrix), B |
+| **My listings** (filters: all, live, in review, needs action, drafts, closed) | `/listings` | new, demo-only | T, M |
+| **Listing wizard** (property, location, price + facts, photos, ownership, review) | `/listings/new?channel=agent|ebroker&draft=` | new, demo-only; map pin picker not connected | T (full journey), M, B |
+| **Listing receipt** ("in review", never "live") | `/listings/:id/submitted` | new | T |
+| **Listing status + lifecycle actions** (sold, rented, withdraw, renew, edit, fix) | `/listings/:id` | new, demo-only; reviewer decisions via QA tools | T |
+| **Fix and resubmit** | `/listings/:id/fix` | new | T (logic) |
+| **Edit after approval** (material change set vs immediate) | `/listings/:id/edit` | new | T (logic) |
+
+## 5. Aqary e-Broker (selling)
+
+| Screen | Route | Status |
+|---|---|---|
+| **Sell entry** (how it works, who can use it, fee position, sign-in gate) | `/sell` | new; fee shown as "awaiting approval", no amount (decision #26) — T, B |
+| **Seller photo ID (once)** | `/sell/identity` | new, demo-only — T |
+| Property / location / deed / photos / review / submit / receipt / status / resubmission / lifecycle | shared listing routes with `channel=ebroker` | new, demo-only — T |
+
+## 6. AqaratiBroker programme
+
+| Screen | Route | Status |
+|---|---|---|
+| **Programme introduction + badge meaning + pending terms** | `/brokers` | new — T, M |
+| **Broker directory** (search, governorate filter, counts, empty + clear) | `/brokers/all` | new, demo roster — T, M |
+| **Broker profile** (badge, approved listings, honest review state, contact gated by sign-in) | `/brokers/:id` | new, demo roster — T, M, B |
+
+## 7. Engagements and reviews
+
+| Screen | Route | Status |
+|---|---|---|
+| **Engagement request** (rules: 14-day confirm, 60-day review window) | `/engagements/new?pro=` | new, demo-only — T, M |
+| **My engagements** (filters) | `/engagements` | new — M |
+| **Engagement detail** (waiting for company / for me, confirmed, expired, declined, cancelled; cancel confirmation; QA professional answer) | `/engagements/:id` | new — T |
+| Company-side engagement confirmation | `/workspace/engagements/:id` | existing; still "not connected" in the D&B demo capabilities |
+| **Review composer** (eligibility gates → stars + 10–500 chars → preview → "submitted for moderation") | `/reviews/write?kind=professional|provider|seller` | new — T |
+| **Edit review** (only when the service allows) | `/reviews/:id/edit` | new — logic T |
+| **My reviews** (moderation status, QA moderation tools) | `/reviews/mine` | new — M |
+| **Report review** (reason in own words, confirm, receipt, already-reported) | `/reviews/report` | new — T |
+| Viewing → review the host | `/viewings/:id/review` | **replaced** the "coming soon" page with the composer (seller target) |
+| Maintenance → review the provider | `/bookings/:id` | rewired to the composer |
+
+## 8. Maintenance
+
+| Screen | Route | Status |
+|---|---|---|
+| Customer: discovery, provider profile, request, review, detail, cancel, Activity list | existing | demo-only (T) |
+| **Provider: invitation acceptance (account, company, services + wilayats, review)** | `/invite/:token` | new, demo-only — T |
+| **Provider: documents (CR + municipal licence)** | `/provider/documents` | new — T (logic) |
+| **Provider: verification status (+ QA reviewer decisions)** | `/provider/status` | new — M |
+| **Provider: home** (new / confirmed counts) | `/provider` | new, approved-only guard — T, M |
+| **Provider: requests** (new, confirmed, history) | `/provider/requests` | new — M |
+| **Provider: request detail** (copy customer number, confirm, decline, complete from the preferred day, cancel) | `/provider/requests/:id` | new — T (logic) |
+
+## 9. Notifications, Activity, account
+
+| Screen | Route | Status |
+|---|---|---|
+| Notification inbox | `/notifications` | extended: listings, engagements, reviews, provider grant and provider requests, each deep-linking to the record; sources load in parallel |
+| **Notification settings** (mandatory notices listed; optional: none defined; push not connected) | `/account/notification-settings` | new |
+| Account tab | `/app/account` | **rebuilt**: profile header, grouped rows (account, activity, preferences, help/legal), sign-out confirmation, delete |
+| **Personal profile** | `/account/profile` | new |
+| **Edit profile** (names via PATCH /me; email via verify-before-update; phone explained) | `/account/profile/edit` | new, demo-only — T (logic) |
+| **Organisation** (company record, status, documents metadata, edit link, public preview, single-owner note) | `/account/organisation` | new |
+| **Settings** (light / dark / same as device, language, notifications, security, legal, help, about) | `/account/settings` | new; theme + language now persist on device — T |
+| **Privacy & legal** (terms, privacy, consent, data, delete) | `/account/privacy` | new |
+| **Security** (password link, sign out of all devices; device list unavailable) | `/account/security` | new, demo-only |
+| Delete account | `/account/delete` | existing; demo success now states that nothing was deleted on a server |
+
+## 10. Help
+
+| Screen | Route | Status |
+|---|---|---|
+| `?` button + short sheet + Learn more | everywhere listed in the action matrix | new — T |
+| **Help & guides** (13 topics, 3 groups, support placeholder) | `/help` | new — M |
+| **Guide article** (+ related topics; not-found recovery) | `/help/:id` | new — T, M |
+
+## 11. Admin Web Console (separate app, `admin_web/`)
+
+| Screen | Route | Status |
+|---|---|---|
+| Staff login, TOTP, session expired, step-up dialog | `/login`, `/totp`, `/session-expired` | demo-only — T, B |
+| Dashboard | `/dashboard` | demo-only — T, B |
+| Verification queue + filters | `/queue` | demo-only — T |
+| Review item: fields, watermarked document viewer, checklist, decisions, reason codes, claim / release / escalate, four-eyes, history | `/queue/:id` | demo-only — T, B |
+| Suspension & reinstatement | `/accounts` | demo-only — T |
+| Provider invitations | `/invitations` | demo-only — T |
+| Review moderation | `/moderation` | demo-only — T |
+| Ad banners | `/ads` | demo-only — T |
+| Audit log | `/audit` | demo-only — T |
+| Admin users | `/admins` | demo-only — T |
+| Roles & permissions, reason codes, checklists | `/roles` | read-only — T |
+| Forbidden-for-role, not found, empty, error | all | T |
+
+## 12. Not in scope (by source)
+
+Organisation team members (REMOVED from MVP, single owner), Marketplace (FUTURE), loan application, in-app chat, calendar sync, payments / deposits / escrow.
+
+## Totals
+
+- Customer app: 118 routes. New in this pass: 34 routes + the version gate + the `?` sheet.
+- Admin console: 13 routes, all new.
+- Still **missing / blocked**: real backend for every demo repository; map pin picker for listings; Aqarati Broker grant creation (Super Admin flow exists only as a permission); company-side engagement API; lead events; push delivery; legal text; consent versions; device list.

@@ -40,11 +40,7 @@ const Map<String, (String, String)> roleHomeStrings = {
   'rh.agent.profile.sub': ('Licensed role · Approved', 'وسيط مرخّص · معتمد'),
   'rh.agent.tools': ('Your tools', 'أدواتك'),
   'rh.agent.listings': ('My listings', 'إعلاناتي'),
-  'rh.agent.listings.sub': ('Listing service not connected', 'خدمة الإعلانات غير متصلة'),
-  'rh.agent.listings.note': (
-    'Creating and managing listings needs the approved listing service, which is not connected to this app yet. Nothing is shown until it is.',
-    'إنشاء الإعلانات وإدارتها يحتاج إلى خدمة الإعلانات المعتمدة، وهي غير متصلة بالتطبيق بعد. لن يظهر شيء قبل ذلك.',
-  ),
+  'rh.agent.listings.sub': ('Create, track and renew listings', 'أنشئ إعلاناتك وتابعها وجدّدها'),
   'rh.agent.viewings': ('Viewings', 'المعاينات'),
   'rh.agent.viewings.sub': ('Open your viewing activity', 'افتح نشاط المعاينات'),
   'rh.agent.contact.note': (
@@ -56,10 +52,12 @@ const Map<String, (String, String)> roleHomeStrings = {
   'rh.agent.status': ('Listing status', 'حالة الإعلانات'),
   'rh.agent.status.t': ('Your property listings', 'إعلاناتك العقارية'),
   'rh.agent.status.b': (
-    'Approved, pending and draft listings will appear here once the listing service is connected.',
-    'ستظهر هنا الإعلانات المعتمدة والمعلّقة والمسودات عند ربط خدمة الإعلانات.',
+    'Counts come from the listings you submitted. Open My listings for each listing’s status and next step.',
+    'تأتي الأرقام من الإعلانات التي قدّمتها. افتح إعلاناتي لمعرفة حالة كل إعلان وخطوته التالية.',
   ),
   'rh.agent.status.tag': ('Status comes from account data', 'الحالة من بيانات الحساب'),
+  'rh.agent.status.empty': ('No listings submitted yet.', 'لم تُقدَّم أي إعلانات بعد.'),
+  'rh.agent.new': ('New listing', 'إعلان جديد'),
   'rh.agent.recent': ('Recent contact activity', 'نشاط التواصل الأخير'),
   'rh.agent.recent.none': ('No activity to show yet', 'لا يوجد نشاط لعرضه بعد'),
 

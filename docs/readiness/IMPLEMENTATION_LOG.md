@@ -1,5 +1,53 @@
 # Full-app readiness: implementation log
 
+## 2026-10-20 / 21 — completion pass (new laptop, new Claude account)
+
+Nothing was committed, pushed or deployed. The local clone's push URL was set to `DISABLED_NO_PUSH_WITHOUT_USER_APPROVAL` as a guard. No backend, API contract, migration or infrastructure file was touched. No packages were added to the customer app; the admin console is a new, separate package.
+
+### 0. Starting point (verified, not assumed)
+Fresh clone of `SyedAmeenAli/Aqarati-Final-UI-UX`, `main` at `e0a6bc3`, clean tree. Baseline: `flutter analyze` 41 issues (0 errors, 3 warnings, all pre-existing), `flutter test` 549 passing. Sources read: architecture v2.4 PDF (sections 5, 12, 16–19, 29–36, 47–51, 68, 81–89, 105), the 100-page blueprint, the handoff package, existing readiness docs, router, core kit, demo backend and every feature module touched.
+
+### 1. Shared foundations
+- `lib/core/aq/aq_kit.dart`: status pill, list row / row group, empty state, retry panel, geometry-matched skeleton rows, info card, state timeline, `aqConfirm` sheet, character counter, plain page frame. Uses only existing AQ tokens and motion.
+- `lib/core/localization/extra_strings.dart`: aggregates the new string maps (help, listings, broker, reviews, account, provider) as one const map so duplicate keys fail at compile time; adds the closed list of 12 reason-code messages and update-screen copy.
+- `lib/core/router/product_routes.dart`: 34 new routes, all on the `AQRoute` family.
+- `lib/core/config/app_version.dart`, `lib/features/system/version_gate.dart`: GET /app/config contract, forced-update screen (never blocks on a failed config call).
+
+### 2. Features added
+| Area | Files | Notes |
+|---|---|---|
+| Contextual help (`?` → sheet → guide → related) | `features/help/*` | 13 plain-language topics, EN + draft AR |
+| Listing lifecycle (agent + e-Broker) | `features/listings/*` | taxonomy §81.1, attribute matrix (derived §16.2), drafts, 6-step wizard, idempotent submit, duplicate deed, receipt, status, sold / rented / withdraw / renew, edit after approval with change set, fix and resubmit, QA reviewer tools |
+| Aqary e-Broker | `features/listings/ebroker_screens.dart` | entry, sign-in gate, fee "awaiting approval" (no amount), photo ID once |
+| AqaratiBroker programme | `features/broker/*` | intro, directory, profile, approved listings, gated contact, honest reviews; badge on property detail |
+| Engagements (client) | `features/engagement/engagement_screens.dart` | request, list, detail, cancel; QA professional answers |
+| Reviews | `features/reviews/review_screens.dart`, `review_strings.dart` | composer with eligibility gates, preview, moderation receipt, my reviews, edit, report (free-text reason); seller target added; viewing and maintenance entry points rewired |
+| Profile & settings | `features/account/account_screens.dart`, `account_strings.dart` | profile, edit (PATCH /me), organisation, settings (incl. "same as device"), notification settings, privacy & legal, security (password link, sign out everywhere), session expired; Account tab rebuilt; theme + language persisted on device |
+| Maintenance provider | `features/provider/*` | invitation (valid / expired / used / unknown), account + company + services/area, documents, status, workspace home, requests, decisions; home banner |
+| Notifications | `features/notifications/notifications.dart` | listings, engagements, reviews, provider grant and requests, deep links; sources load in parallel |
+| Admin Web Console | `admin_web/` | separate Flutter web app: login, TOTP, session expiry, step-up, dashboard, queue, review item, suspension, invitations, moderation, ads, audit, admin users, roles; RBAC, four-eyes, claims, version lock, note safety and audit enforced in the service layer |
+
+### 3. Changes to existing code
+| Change | Why |
+|---|---|
+| `MeSession` gains first / last name, email, business name, provider grant; `AccountApi` gains `updateProfile`, `signOutEverywhere`; demo backend supports both | profile, provider workspace |
+| Review report takes a free-text reason; `ReportReason` enum removed | it was an invented code list |
+| Agent home: My listings tile enabled, live counts | listing service now exists (demo) |
+| Home / Explore: Aqarati Broker → `/brokers`, D&B section → `/app/explore/build`, Sell → `/sell`, `?` help on sections | dead or generic entry points |
+| `/viewings/:id/review` now opens the composer (was "coming soon") | review flow |
+| Maintenance completed copy corrected ("review after completed booking", not "engagement") | wrong rule |
+| Delete-account demo success now says nothing was deleted on a server | truthful success |
+| Stale "listing service not connected" copy removed | outdated |
+
+### 4. Bugs found by the new tests and fixed
+- 2 px overflow in the wizard title + `?` rows (Flexible), 34 px overflow in the Aqarati Broker badge, `AQListRow` trailing text at 200 %, provider home header, broker badge row on property detail, my-reviews status row.
+- Duplicate "Choose a market." text (error + hint).
+- Snackbar covering the e-Broker "Continue" CTA (replaced by an announcement).
+- Notification inbox waited for the sum of six sources (now parallel).
+
+### 5. Verification
+See `FINAL_ACCEPTANCE_REPORT.md`.
+
 ## 2026-10-16
 
 Plan followed: preserve, audit motion, audit the whole app, fix supported functionality, test, document. Nothing was committed, pushed or deployed. No packages were added.

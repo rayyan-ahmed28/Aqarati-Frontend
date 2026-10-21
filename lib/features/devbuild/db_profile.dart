@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../engagement/engagement_screens.dart' show EngagementProfileCard;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -230,7 +231,9 @@ class DbStars extends StatelessWidget {
 
 class DbReviewCard extends StatelessWidget {
   final DbReview review;
-  const DbReviewCard(this.review, {super.key});
+  /// Name of the reviewed company; when set the card offers "Report".
+  final String? about;
+  const DbReviewCard(this.review, {super.key, this.about});
   @override
   Widget build(BuildContext context) {
     final c = AQColors.of(context);
@@ -269,9 +272,21 @@ class DbReviewCard extends StatelessWidget {
               style: AQTypography.of(context, AQText.bodyMedium),
             ),
             const SizedBox(height: AQSpacing.x2),
-            Text(
-              f.t('db.rev.by', {'a': review.author}),
-              style: AQTypography.of(context, AQText.labelSmall, soft: true),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    f.t('db.rev.by', {'a': review.author}),
+                    style: AQTypography.of(context, AQText.labelSmall, soft: true),
+                  ),
+                ),
+                // Published reviews can be reported (POST /reviews/:id/reports); a moderator decides.
+                if (about != null)
+                  AQTextButton(
+                    label: f.t('rp.action'),
+                    onPressed: () => context.push('/reviews/report?id=${Uri.encodeQueryComponent(review.id)}&about=${Uri.encodeQueryComponent(about!)}'),
+                  ),
+              ],
             ),
           ],
         ),
@@ -790,7 +805,7 @@ class _DbProfileScreenState extends ConsumerState<DbProfileScreen> {
           data: (list) => list.isEmpty
               ? const SizedBox.shrink()
               : Column(
-                  children: [for (final r in list.take(2)) DbReviewCard(r)],
+                  children: [for (final r in list.take(2)) DbReviewCard(r, about: p.name)],
                 ),
         ),
         AQSecondaryButton(
@@ -798,6 +813,9 @@ class _DbProfileScreenState extends ConsumerState<DbProfileScreen> {
           trailingChevron: false,
           onPressed: () => context.push('/build/pro/${p.id}/reviews'),
         ),
+        const SizedBox(height: AQSpacing.x4),
+        // Reviews need an engagement both sides confirm (a call or WhatsApp tap is not one).
+        EngagementProfileCard(pro: p),
       ],
     );
   }
@@ -903,7 +921,7 @@ class _DbReviewsScreenState extends ConsumerState<DbReviewsScreen> {
                 if (shown.isEmpty)
                   DbNotice(f.t('db.rev.filterEmpty'))
                 else
-                  for (final r in shown) DbReviewCard(r),
+                  for (final r in shown) DbReviewCard(r, about: pro.valueOrNull?.name),
               ],
             );
           },

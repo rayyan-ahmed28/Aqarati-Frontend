@@ -6,6 +6,18 @@
       "runtimeExecutable": "C:\\src\\flutter\\bin\\flutter.bat",
       "runtimeArgs": ["run", "-d", "chrome", "--web-port=5959"],
       "port": 5959
+    },
+    {
+      "name": "aqarati-qa-build",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "5960", "--directory", "build/web_qa"],
+      "port": 5960
+    },
+    {
+      "name": "aqarati-admin-build",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "5961", "--directory", "admin_web/build/web"],
+      "port": 5961
     }
   ]
 }

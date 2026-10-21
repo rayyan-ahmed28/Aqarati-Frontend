@@ -1,5 +1,7 @@
 # Source-gap report
 
+> Superseded on 2026-10-21 by `FRONTEND_GAPS_AND_API_BLOCKERS.md` (kept for history).
+
 Updated 2026-10-16. What the app cannot do honestly yet, why, and what is needed. Nothing here was invented or faked; each item is either gated in the UI with an explanation or not present.
 
 ## Missing backend capabilities (front end only is in scope)

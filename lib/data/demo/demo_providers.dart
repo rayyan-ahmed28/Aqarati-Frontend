@@ -38,6 +38,8 @@ void demoEnterAs(DemoBackendState s, SignupPurpose purpose) {
     ..grant = business ? GrantState.approved : null
     ..stage = null
     ..businessName = business ? 'Demo business' : null
+    ..firstName = 'Demo'
+    ..lastName = 'Account'
     ..serviceType = purpose == SignupPurpose.interiorExteriorDesign ? InteriorExteriorServiceType.both : null
     ..signedIn = true
     ..emailVerified = true;
@@ -125,6 +127,8 @@ void _seedReviewSession(DemoBackendState s) {
     ..grant = grant
     ..stage = stage
     ..businessName = 'Review Business'
+    ..firstName = 'Review'
+    ..lastName = 'Account'
     ..serviceType = name == 'interior' ? InteriorExteriorServiceType.both : null
     ..signedIn = true
     ..emailVerified = true;

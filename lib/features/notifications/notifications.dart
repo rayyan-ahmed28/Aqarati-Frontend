@@ -11,7 +11,12 @@ import '../../core/aq/aq_typography.dart';
 import '../../core/domain/account_models.dart';
 import '../../core/localization/flow_strings.dart';
 import '../../data/api/account_api.dart';
+import '../engagement/engagement_repository.dart';
+import '../listings/listing_models.dart' show ListingState;
+import '../listings/listing_repository.dart';
 import '../maintenance/maintenance_repository.dart';
+import '../provider/provider_data.dart';
+import '../reviews/review_repository.dart';
 import '../viewing/data/viewing_repository.dart';
 import '../viewing/domain/viewing_presentation.dart';
 import '../viewing/screens/viewing_kit.dart' show AQViewingSkeleton;
@@ -19,7 +24,7 @@ import '../viewing/widgets/viewing_components.dart';
 import '../viewing/widgets/viewing_format.dart';
 import '../viewing/widgets/viewing_scaffold.dart';
 
-enum NotificationKind { viewing, maintenance, verification }
+enum NotificationKind { viewing, maintenance, verification, listing, engagement, review, provider }
 
 /// One update. Built from what the app already holds (viewings, maintenance requests, the
 /// application status), never invented. Push delivery is not connected, so this is an in-app
@@ -54,9 +59,19 @@ final readNotificationsProvider = StateProvider<Set<String>>((ref) => {});
 final notificationsProvider = FutureProvider.autoDispose<List<AppNotification>>((ref) async {
   final out = <AppNotification>[];
   var failed = 0;
+  // Start every source at once so the inbox waits for the slowest one, not for their sum.
+  final viewingsF = ref.watch(viewingsProvider.future);
+  final bookingsF = ref.watch(maintenanceBookingsProvider.future);
+  final meF = ref.watch(meProvider.future);
+  final listingsF = ref.watch(myListingsProvider.future);
+  final engagementsF = ref.watch(engagementsProvider.future);
+  final reviewsF = ref.watch(myReviewsProvider.future);
+  for (final f in <Future<Object?>>[viewingsF, bookingsF, meF, listingsF, engagementsF, reviewsF]) {
+    f.ignore();
+  }
 
   try {
-    for (final v in await ref.watch(viewingsProvider.future)) {
+    for (final v in await viewingsF) {
       final key = v.rescheduleOffered ? 'ntf.vw.reschedule' : 'ntf.vw.${v.status.name}';
       out.add(AppNotification(id: 'vw-${v.id}-${v.status.name}-${v.rescheduleOffered}', kind: NotificationKind.viewing, titleKey: key, when: v.slot.start, at: v.createdAt, route: ViewingPresentation.momentPath(v)));
     }
@@ -65,7 +80,7 @@ final notificationsProvider = FutureProvider.autoDispose<List<AppNotification>>(
   }
 
   try {
-    for (final b in await ref.watch(maintenanceBookingsProvider.future)) {
+    for (final b in await bookingsF) {
       out.add(AppNotification(id: 'mnt-${b.id}-${b.status.name}', kind: NotificationKind.maintenance, titleKey: 'ntf.mnt.${b.status.name}', subject: b.providerName, when: b.date, at: b.createdAt, route: '/bookings/${b.id}'));
     }
   } catch (_) {
@@ -73,7 +88,7 @@ final notificationsProvider = FutureProvider.autoDispose<List<AppNotification>>(
   }
 
   try {
-    final me = await ref.watch(meProvider.future);
+    final me = await meF;
     final g = me.grant;
     if (g != null && g != GrantState.draft && me.purpose != null) {
       out.add(AppNotification(id: 'ver-${g.name}-${me.stage?.name}', kind: NotificationKind.verification, titleKey: verificationTitleKey(g, me.stage), at: DateTime.now(), route: kVerificationRoute));
@@ -81,6 +96,39 @@ final notificationsProvider = FutureProvider.autoDispose<List<AppNotification>>(
   } catch (_) {
     // A guest has no application: not a failure of the inbox.
   }
+
+  // Listings, engagements, reviews and provider work: each derived from the record's real state and
+  // linked to that record. A failure here only drops that source; it never invents an update.
+  try {
+    for (final l in await listingsF) {
+      if (l.state == ListingState.draft) continue;
+      out.add(AppNotification(id: 'lst-${l.id}-${l.state.name}-${l.changeSet?.status}', kind: NotificationKind.listing, titleKey: 'ntf.lst.${l.state.name}', subject: l.title, at: l.decidedAt ?? l.submittedAt ?? l.createdAt, route: '/listings/${l.id}'));
+    }
+  } catch (_) {}
+  try {
+    final now = DateTime.now();
+    for (final e in await engagementsF) {
+      final p = e.phaseAt(now);
+      out.add(AppNotification(id: 'eng-${e.id}-${p.name}', kind: NotificationKind.engagement, titleKey: 'ntf.eng.${p.name}', subject: e.professionalName, at: e.confirmedAt ?? e.requestedAt, route: '/engagements/${e.id}'));
+    }
+  } catch (_) {}
+  try {
+    for (final r in await reviewsF) {
+      out.add(AppNotification(id: 'rv-${r.id}-${r.status.name}', kind: NotificationKind.review, titleKey: 'ntf.rv.${r.status.name}', subject: r.target.name, at: r.createdAt, route: '/reviews/mine'));
+    }
+  } catch (_) {}
+  try {
+    final me = await meF;
+    final g = me.providerGrant;
+    if (g != null && g != GrantState.draft) {
+      out.add(AppNotification(id: 'prv-${g.name}', kind: NotificationKind.provider, titleKey: 'ntf.prv.${g.name}', at: DateTime.now(), route: '/provider/status'));
+    }
+    if (g == GrantState.approved) {
+      for (final r in await ref.watch(providerRequestsProvider.future)) {
+        out.add(AppNotification(id: 'prq-${r.id}-${r.status.name}', kind: NotificationKind.provider, titleKey: 'ntf.prq.${r.status.name}', subject: r.wilayat, when: r.date, at: r.createdAt, route: '/provider/requests/${r.id}'));
+      }
+    }
+  } catch (_) {}
 
   if (failed == 2 && out.isEmpty) {
     // Both list sources failed and there is nothing else to show: say so instead of "nothing new".

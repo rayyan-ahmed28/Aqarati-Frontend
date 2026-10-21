@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../help/help.dart';
 import '../../core/aq/aq_primitives.dart';
 import '../../core/aq/aq_scene.dart';
 import '../../core/aq/aq_tokens.dart';
@@ -257,7 +258,7 @@ class _FilterBodyState extends State<_FilterBody> {
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Semantics(header: true, child: Text(f.t('flt.title'), style: AQTypography.of(context, AQText.displaySmall))),
+              Row(children: [Flexible(child: Semantics(header: true, child: Text(f.t('flt.title'), style: AQTypography.of(context, AQText.displaySmall)))), const AQHelpButton('markets')]),
               Text(f.t('flt.sub'), style: AQTypography.of(context, AQText.bodySmall, soft: true)),
             ]),
           ),

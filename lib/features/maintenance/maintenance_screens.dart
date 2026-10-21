@@ -14,7 +14,8 @@ import '../../core/localization/flow_strings.dart';
 import '../../data/api/account_api.dart' show ApiException;
 import '../../data/models/enums.dart';
 import '../business/aq_business_profile.dart' show aqBusinessProvider;
-import '../reviews/review_screen.dart';
+import '../reviews/review_models.dart';
+import '../reviews/review_screens.dart' show reviewWritePath;
 import '../viewing/domain/viewing_presentation.dart' show AQTone;
 import '../viewing/screens/viewing_kit.dart' show AQViewingSectionTitle, AQViewingSkeleton;
 import '../viewing/widgets/viewing_components.dart';
@@ -306,7 +307,7 @@ class _MaintenanceDetailScreenState extends ConsumerState<MaintenanceDetailScree
           case MaintenanceStatus.cancelled:
             primary = AQPrimaryButton(label: f.t('mnt.det.again'), trailingChevron: false, onPressed: () => context.push('/business/${b.providerId}/book'));
           case MaintenanceStatus.completed:
-            primary = AQPrimaryButton(label: f.t('mnt.det.review'), trailingChevron: false, onPressed: () => Navigator.of(context).push(AQRoute.route<void>(ReviewScreen(listingLabel: _service(f, b.service), listingTitle: b.providerName))));
+            primary = AQPrimaryButton(label: f.t('mnt.det.review'), trailingChevron: false, onPressed: () => context.push(reviewWritePath(ReviewTarget(kind: ReviewTargetKind.provider, id: b.providerId, name: b.providerName))));
         }
         return AQViewingScaffold(
           title: f.t('mnt.det.title'),

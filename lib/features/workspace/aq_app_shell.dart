@@ -3,19 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/aq/aq_demo.dart';
 import '../../core/aq/aq_documents.dart';
+import '../../core/aq/aq_kit.dart';
 import '../../core/aq/aq_primitives.dart';
 import '../../core/aq/aq_scene.dart';
 import '../../core/aq/aq_tokens.dart';
 import '../../core/aq/aq_typography.dart';
-import '../../core/auth/auth_repository.dart';
 import '../../core/config/backend_mode.dart';
 import '../../core/domain/account_models.dart';
-import '../../core/localization/entry_strings.dart';
 import '../../core/localization/flow_strings.dart';
 import '../../data/api/account_api.dart';
 import '../devbuild/db_models.dart' show proTypeOfPurpose;
 import '../flow/screens/approval_screens.dart' show workspaceCaps;
 import '../flow/widgets/flow_common.dart';
+import '../account/account_screens.dart' show AQAccountHeader, aqSignOut;
 import '../notifications/notifications.dart';
 import 'aq_explore.dart';
 import '../role_home/role_home_screen.dart';
@@ -167,93 +167,44 @@ class AccountTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final f = FlowStrings.of(context);
     final me = ref.watch(meProvider);
-    final current = ref.watch(localeProvider).languageCode;
     final m = me.valueOrNull;
     final c = AQColors.of(context);
+    final business = m?.purpose != null && (roleConfigs[m!.purpose]?.needsDocuments ?? false);
+    final unread = m == null ? 0 : ref.watch(unreadNotificationsProvider);
     return _TabPage(title: f.t('account.title'), children: [
       const AQDemoNotice(),
       if (kUseDemoBackend) const SizedBox(height: AQSpacing.x4),
       if (me.isLoading && m == null) const AQSkeleton(),
       if (m == null && me.hasError) _guestCard(context),
+      if (m != null) AQAccountHeader(me: m),
       if (m != null) ..._sessionSections(context, m),
       if (m != null)
-        AQReviewSection(title: f.t('account.title'), children: [
-          if (m.purpose != null) AQKeyValue(f.t('account.role'), roleTitle(context, m.purpose!)),
-          if (m.phoneLast4 != null) AQKeyValue(f.t('account.phone'), '•••• ${m.phoneLast4}'),
+        AQRowGroup(title: f.t('acc.g.account'), rows: [
+          AQListRow(icon: 'user', title: f.t('acc.profile'), subtitle: f.t('acc.profile.sub'), onTap: () => context.push('/account/profile')),
+          if (business) AQListRow(icon: 'development', title: f.t('acc.org'), subtitle: f.t('acc.org.sub'), onTap: () => context.push('/account/organisation')),
+          if (m.providerGrant != null) AQListRow(icon: 'construction', title: f.t('acc.provider'), subtitle: f.t('acc.provider.sub'), onTap: () => context.push('/provider')),
         ]),
-      if (m != null)
-        Padding(
-          padding: const EdgeInsets.only(bottom: AQSpacing.x3),
-          child: Builder(builder: (context) {
-            final unread = ref.watch(unreadNotificationsProvider);
-            return AQSecondaryButton(
-              label: unread > 0 ? '${f.t('ntf.row')} ($unread)' : f.t('ntf.row'),
-              semanticsLabel: unread > 0 ? '${f.t('ntf.row')}. ${f.t('ntf.unread', {'n': '$unread'})}' : f.t('ntf.row'),
-              leadingIcon: 'activity',
-              trailingChevron: false,
-              onPressed: () => context.push('/notifications'),
-            );
-          }),
-        ),
-      Padding(
-        padding: const EdgeInsets.only(bottom: AQSpacing.x3),
-        child: AQSecondaryButton(label: f.t('account.saved'), leadingIcon: 'star', trailingChevron: false, onPressed: () => context.push('/saved')),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(bottom: AQSpacing.x3),
-        child: AQSecondaryButton(label: f.t('account.tools'), leadingIcon: 'calendar', trailingChevron: false, onPressed: () => context.push('/calculators')),
-      ),
-      AQReviewSection(title: f.t('account.language'), children: [
-        _LangRow(title: 'English', selected: current == 'en', onTap: () => ref.read(localeProvider.notifier).state = const Locale('en')),
-        _LangRow(title: 'العربية', selected: current == 'ar', onTap: () => ref.read(localeProvider.notifier).state = const Locale('ar')),
+      AQRowGroup(title: f.t('acc.g.activity'), rows: [
+        if (m != null) AQListRow(icon: 'activity', title: f.t('ntf.row'), subtitle: f.t('acc.notifications.sub'), trailing: unread > 0 ? f.t('ntf.unread', {'n': '$unread'}) : null, onTap: () => context.push('/notifications')),
+        AQListRow(icon: 'star', title: f.t('account.saved'), subtitle: f.t('acc.saved.sub'), onTap: () => context.push('/saved')),
+        if (m != null) AQListRow(icon: 'home', title: f.t('acc.listings'), subtitle: f.t('acc.listings.sub'), onTap: () => context.push('/listings')),
+        AQListRow(icon: 'plus', title: f.t('acc.sell'), subtitle: f.t('acc.sell.sub'), onTap: () => context.push('/sell')),
+        if (m != null) AQListRow(icon: 'agent', title: f.t('acc.engagements'), subtitle: f.t('acc.engagements.sub'), onTap: () => context.push('/engagements')),
+        if (m != null) AQListRow(icon: 'star-fill', title: f.t('acc.reviews'), subtitle: f.t('acc.reviews.sub'), onTap: () => context.push('/reviews/mine')),
+        AQListRow(icon: 'calendar', title: f.t('account.tools'), subtitle: f.t('acc.tools.sub'), onTap: () => context.push('/calculators')),
       ]),
-      AQReviewSection(title: f.t('account.appearance'), children: [
-        _LangRow(title: f.t('account.light'), selected: ref.watch(themeModeProvider) == ThemeMode.light, onTap: () => ref.read(themeModeProvider.notifier).state = ThemeMode.light),
-        _LangRow(title: f.t('account.dark'), selected: ref.watch(themeModeProvider) == ThemeMode.dark, onTap: () => ref.read(themeModeProvider.notifier).state = ThemeMode.dark),
+      AQRowGroup(title: f.t('acc.g.preferences'), rows: [
+        AQListRow(icon: 'sun', title: f.t('acc.settings'), subtitle: f.t('acc.settings.sub'), onTap: () => context.push('/account/settings')),
       ]),
-      if (m != null)
-        AQSecondaryButton(
-          label: f.t('account.signOut'),
-          trailingChevron: false,
-          onPressed: () async {
-            await ref.read(authRepositoryProvider).signOut();
-            ref.invalidate(meProvider);
-            ref.invalidate(verificationProvider);
-            if (context.mounted) context.go('/entry');
-          },
-        ),
+      AQRowGroup(title: f.t('acc.g.support'), rows: [
+        AQListRow(icon: 'info', title: f.t('acc.help'), subtitle: f.t('acc.help.sub'), onTap: () => context.push('/help')),
+        AQListRow(icon: 'shield', title: f.t('acc.legal'), subtitle: f.t('acc.legal.sub'), onTap: () => context.push('/account/privacy')),
+      ]),
+      if (m != null) AQSecondaryButton(label: f.t('account.signOut'), trailingChevron: false, onPressed: () => aqSignOut(context, ref)),
       if (m != null) ...[
         const SizedBox(height: AQSpacing.x3),
         Center(child: AQTextButton(label: f.t('del.row'), color: c.danger, onPressed: () => context.push('/account/delete'))),
       ],
     ]);
-  }
-}
-
-class _LangRow extends StatelessWidget {
-  final String title;
-  final bool selected;
-  final VoidCallback onTap;
-  const _LangRow({required this.title, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final c = AQColors.of(context);
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: title,
-      excludeSemantics: true,
-      child: AQPressable(
-        onTap: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AQControl.tap),
-          child: Row(children: [
-            Expanded(child: Text(title, style: AQTypography.of(context, AQText.bodyMedium))),
-            if (selected) AQIcon('check', size: AQIconSize.medium, color: c.accent),
-          ]),
-        ),
-      ),
-    );
   }
 }

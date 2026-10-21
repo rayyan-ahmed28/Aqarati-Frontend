@@ -10,7 +10,8 @@ import '../../core/localization/flow_strings.dart';
 import '../../data/models/business.dart';
 import '../../data/models/enums.dart' show BusinessCategory;
 import '../../data/repositories/providers.dart';
-import '../reviews/review_screen.dart';
+import '../reviews/review_models.dart';
+import '../reviews/review_screens.dart' show reviewWritePath;
 import '../viewing/widgets/viewing_format.dart';
 import '../viewing/widgets/viewing_scaffold.dart';
 import '../workspace/aq_home.dart' show aqImg, aqAllPropertiesProvider, AQResultCard, AQSkeletonBox;
@@ -148,7 +149,7 @@ class _Profile extends ConsumerWidget {
           _head(context, f.t('bp.listings')),
           for (final p in props) Padding(padding: const EdgeInsets.only(bottom: AQSpacing.x3), child: AQResultCard(property: p)),
         ],
-        _head(context, f.t('bp.reviews'), trailing: AQTextButton(label: f.t('bp.write'), color: c.accentDeep, onPressed: () => Navigator.of(context).push(AQRoute.route<void>(ReviewScreen(listingLabel: b.locationLabel, listingTitle: b.name, priceLabel: ''))))),
+        _head(context, f.t('bp.reviews'), trailing: AQTextButton(label: f.t('bp.write'), color: c.accentDeep, onPressed: () => context.push(reviewWritePath(ReviewTarget(kind: b.categories.contains(BusinessCategory.maintenance) ? ReviewTargetKind.provider : ReviewTargetKind.professional, id: b.id, name: b.name))))),
         Text(b.rating == null ? f.t('bp.noReviews') : f.t('bp.ratedBy', {'r': b.rating!.toStringAsFixed(1), 'n': VFmt.n(context, b.reviewCount ?? 0)}), style: AQTypography.of(context, AQText.bodyMedium, soft: true)),
         const SizedBox(height: AQSpacing.x4),
       ],
