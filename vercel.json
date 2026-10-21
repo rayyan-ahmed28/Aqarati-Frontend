@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "echo 'Flutter is installed by tool/vercel_build.sh'",
-  "buildCommand": "bash tool/vercel_build.sh --dart-define=REVIEW_TOOLS=true",
+  "buildCommand": "bash tool/vercel_build.sh --dart-define=REVIEW_TOOLS=true && cd admin_web && bash ../tool/vercel_build.sh --base-href /admin/ -o ../build/web/admin",
   "outputDirectory": "build/web"
 }

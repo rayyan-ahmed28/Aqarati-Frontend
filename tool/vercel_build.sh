@@ -2,7 +2,8 @@
 # Vercel build step: installs the pinned Flutter SDK, then builds the Flutter web app in the
 # current directory into build/web. Extra arguments go to `flutter build web`.
 #
-# Used by vercel.json (customer app, repo root) and admin_web/vercel.json (admin console).
+# Used by vercel.json (customer app at /, admin console at /admin/) and admin_web/vercel.json
+# (admin console as its own Vercel project).
 # Locally you can point FLUTTER_HOME at an existing SDK to skip the download.
 set -euo pipefail
 
